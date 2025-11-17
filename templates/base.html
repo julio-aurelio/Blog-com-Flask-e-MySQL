@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog</title>
+    <link rel="stylesheet" href="../static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lexend+Deca:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+    <div class="header-content">
+        <div class="pibble">
+            <img src="../static/img/piblle2.png" alt="">
+        </div>
+        <div class="titulo">
+            <h1>Wash my BLOG!</h1>
+        </div>
+        <div class="header-right">
+            {% if 'user' in session or 'admin' in session %}
+                <div class="auth-buttons">
+                    {% if 'admin' in session %}
+                    <a class="voltar" href="/" class="auth-btn login-btn">Inicio</a>
+                    <a href="/dashboard" class="auth-btn login-btn">Área ADM</a>
+                    {% endif %}
+                    <a href="/logout" class="auth-btn registrar-btn">Sair</a>
+                </div>
+            {% else %}
+                <div class="auth-buttons">
+                    <a href="/" class="auth-btn login-btn">Inicio</a>
+                    <a href="/login" class="auth-btn login-btn">Entrar</a>
+                    <a href="/register" class="auth-btn registrar-btn">Cadastrar</a>
+                    
+                </div>
+            {% endif %}
+        </div>
+        <div class="pibble">
+            <img src="../static/img/piblle.png" alt="">
+        </div>
+    </div>
+</header>
+
+    <main>
+        {% block conteudo %}{% endblock %} <!--comando jo JINJA-->
+    </main>
+
+</body>
+
+</html>
