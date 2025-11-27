@@ -2,41 +2,45 @@
 {% block conteudo %}
 
 <div id="dashboard">
-    <div id="dados">
-        <h2>Olá Admin! Gostaria de fazer algo?</h2>
-    </div>
     <div id="info">
-<div class="col-info">
-    <h3>Usuários ( {{ usuarios|length }} )</h3>
-    {% for u in usuarios %}
-    <div class="user-card">
-        <div class="user-info">
-            <span>ID: {{u.idUsuario}}</span>
-            <span>Nome: {{ u.nome }}</span>
-            <span>User: {{ u.user }}</span>
-            <span>Cadastrado: {{ u.dataCadastro.strftime("%d/%m/%y") }}</span>
-            <span>Status: {{ "Ativo" if u.ativo else "Banido" }}</span>
-        </div>
-        <div class="user-actions">
-            <a href="/usuario/excluir/{{ u.idUsuario }}" class="delete-btn" onclick="return confirm('Confirma exclusão do usuário?')"> Excluir</a>
-            <button onclick="alert('Reset de senha ainda não implementado!')"><a href="/usuario/reset/{{ u.idUsuario }}">Resetar senha</a></button>
-            <a href="/status_usuario/{{ u.idUsuario }}" class="status-btn">{{ "banir" if u.ativo else "desbanir" }}</a>
-        </div>
-    </div>
-    {% else %}
-    <p>Nenhum usuário cadastrado!</p>
-    {% endfor %}
-</div>
         <div class="col-info">
-            <h3>Posts ( {{ posts|length}} )</h3>   
+            <h3>Usuários ( {{ usuarios|length }} )</h3>
+            {% for u in usuarios %}
             <div class="user-card">
-            {% for p in posts %}
-            <div class="user-actions">
-                <p>Post feito por ID user:{{p.idUsuario}}{{ p.idPost }} - {{ p.titulo }} - {{ p.conteudo | truncate(30) }} <a href="/deletepost/{{p.idPost}}" onclick="return confirm('Confirma a exclusão, patrão?')" class="delete-btn2"> Excluir </a></p>
+                <div class="user-info">
+                    <span>ID: {{u.idUsuario}}</span>
+                    <span>Nome: {{ u.nome }}</span>
+                    <span>User: {{ u.user }}</span>
+                    <span>Cadastrado: {{ u.dataCadastro.strftime("%d/%m/%y") }}</span>
+                    <span>Status: {{ "Ativo" if u.ativo else "Banido" }}</span>
+                </div>
+                <div class="user-actions">
+                    <a href="/usuario/excluir/{{ u.idUsuario }}" class="delete-btn"
+                        onclick="return confirm('Confirma exclusão do usuário?')"> Excluir</a>
+                    <button onclick="alert('Senha resetada!')"><a
+                            href="/usuario/reset/{{ u.idUsuario }}">Resetar senha</a></button>
+                    <a href="/usuario/status/{{ u.idUsuario }}" class="status-btn">{{ "banir" if u.ativo else "desbanir"
+                        }}</a>
+                </div>
             </div>
+            {% else %}
+            <p>Nenhum usuário cadastrado!</p>
             {% endfor %}
         </div>
-             
+        <div class="col-info">
+            <h3>Posts ( {{ posts|length}} )</h3>
+            {% for p in posts %}
+            <div class="user-info">
+                <p class="informacao">
+                    <span>ID usuario:{{p.idUsuario}}</span>
+                    <span>ID Post:{{ p.idPost }}</span>
+                    <span>titulo:{{ p.titulo }}</span>
+                    <span>conteudo:{{ p.conteudo | truncate(30)}}</span>
+                    <a href="/deletepost/{{p.idPost}}" onclick="return confirm('Confirma a exclusão, patrão?')"class="delete-btn2"> Excluir </a>
+                </p>
+                
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

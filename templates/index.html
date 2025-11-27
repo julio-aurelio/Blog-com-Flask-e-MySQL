@@ -3,77 +3,91 @@
 
 <div class="inicio">
     <div class="col-direita">
-        {% if 'user' in session  %}
+        {% if 'user' in session %}
         <div class="form-post">
             <form action="{{ '/editarpost/'+ post.idPost|string if post else '/novopost' }}" method="post">
-                <p>Olá, {{ session['user'] }}! O que vamos fazer hoje?🤑</p>
-                <input type="text" name="titulo" placeholder="Título do post"
-                    value="{{ post.titulo if post else ''}}" required>
-                <textarea name="conteudo" placeholder="Escreva aqui..." required>{{ post.conteudo if post else '' }}</textarea>
+                <p>Olá, {{ session['user'] }}! O que vamos fazer hoje?</p>
+                <input type="text" name="titulo" placeholder="Título do post" value="{{ post.titulo if post else ''}}"
+                    required>
+                <textarea name="conteudo" placeholder="Escreva aqui..."
+                    required>{{ post.conteudo if post else '' }}</textarea>
                 <button type="submit">{{ 'Salvar' if post else 'Postar' }}</button>
-                {% with msg = get_flashed_messages()|first %}
-                    {% if msg %}
-                        <p class="mensagem">{{ msg }}</p>
-                    {% endif %}
+                {% with mensagens = get_flashed_messages() %}
+                {% if mensagens %}
+                {% for msg in mensagens %}
+                <p style="
+                background-color:green; 
+                border-radius: 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 15px;
+                height: 30px;
+                color: aliceblue;
+                ">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
                 {% endwith %}
             </form>
         </div>
-    {% endif %}
-    </div>
-    <div class="col-centro">
-    <div class="feed">
-        {% if not postagens %}
-        <div class="empty-feed">
-            <p class="empty-text">Ainda não temos posts...</p>
-            <img class="empty-gif" src="../static/img/hollow-knight-breakdance.gif" alt="Hollow Knight GIF">
-        </div>
-        {% else %}
-        {% for post in postagens %}
-        <div class="post">
-            <!-- Header Super Slim -->
-            <div class="post-header">
-                <div class="author-avatar">
-                    {% if post.foto and post.foto != 'default-avatar.png' %}
-                    <img src="../static/uploads/foto-user-1.jpg" alt="{{ post.user }}">
-                    {% else %}
-                    {{ post.user[:1]|upper }}
-                    {% endif %}
-                </div>
-                <div class="author-info">
-                    <div class="author-name">{{ post.user }}</div>
-                    <div class="post-meta">{{ post.dataPost.strftime("%d/%m/%y") }}</div>
-                </div>
-            </div>
-
-            <!-- Conteúdo Direto -->
-            <div class="post-content">
-                <div class="post-text">
-                    <h2>{{ post.titulo }}</h2>
-                    <p>{{ post.conteudo }}</p>
-                </div>
-            </div>
-
-            <!-- Admin Actions (apenas no hover) -->
-            {% if post.idUsuario == session.get('idUsuario') or 'admin' in session %}
-            <div class="post-admin-actions">
-                {% if 'user' in session %}
-                <a href="/editarpost/{{ post.idPost }}">
-                    <button class="admin-btn edit-btn">✏️</button>
-                </a>
-                {% endif %}
-                <form action="/deletarpost/{{ post.idPost }}" method="POST" style="display: inline;">
-                    <button type="submit" class="admin-btn delete-btn" 
-                            onclick="return confirm('Tem certeza que deseja excluir este post?')">
-                        🗑️
-                    </button>
-                </form>
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
         {% endif %}
     </div>
+    <div class="col-centro">
+        <div class="feed">
+            {% if not postagens %}
+            <div class="empty-feed">
+                <p class="empty-text">Ainda não temos posts...</p>
+                <img class="empty-gif" src="../static/img/pibble.gif" alt="Hollow Knight GIF">
+            </div>
+            {% else %}
+            {% for post in postagens %}
+            <div class="post">
+                <!-- Header Super Slim -->
+                <div class="post-header">
+                    <div class="author-avatar">
+                        {% if post.foto and post.foto != 'default-avatar.png' %}
+                        <img src="../static/uploads/{{ post.foto }}" alt="{{ post.user }}">
+                        {% else %}
+                        {{ post.user[:1]|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="author-info">
+                        <div class="author-name">{{ post.user }}</div>
+                        <div class="post-meta">{{ post.dataPost.strftime("%d/%m/%y") }}</div>
+                    </div>
+                </div>
+
+                <!-- Conteúdo Direto -->
+                <div class="post-content">
+                    <div class="post-text">
+                        <h2>{{ post.titulo }}</h2>
+                        <p>{{ post.conteudo }}</p>
+                    </div>
+                </div>
+
+                <!-- Admin Actions (apenas no hover) -->
+                {% if post.idUsuario == session.get('idUsuario') or 'admin' in session %}
+                <div class="post-admin-actions">
+                    {% if 'user' in session %}
+                    <a href="/editarpost/{{ post.idPost }}">
+                        <button class="edit-btn" style="background-color: yellow;">✏️</button>
+                    </a>
+                    {% endif %}
+                    <form action="/deletarpost/{{ post.idPost }}" method="POST" style="display: inline;">
+                        <button style="background-color: red;" type="submit" class="admin-btn delete-btn"
+                            onclick="return confirm('Tem certeza que deseja excluir este post?')">
+                            🗑️
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
     </div>
-    <div class="col-direita"></div>
+    <div class="col-direita">
+        
+    </div>
 </div>
 {% endblock %}

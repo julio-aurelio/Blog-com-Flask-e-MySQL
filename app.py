@@ -17,6 +17,9 @@ senha_admin = os.getenv("SENHA_ADMIN")
 app = Flask(__name__)
 app.secret_key = secret_key #chave secreta
 
+app.config['UPLOAD_FOLDER'] = "static/uploads"
+
+
 #rota inicial do seu site
 @app.route('/')
 def index():
@@ -139,19 +142,28 @@ def login():
     elif request.method == "POST":
         usuario = request.form['user'].lower().strip()
         senha = request.form['senha'].strip()
-        if not usuario or not senha:
-            flash("Preencha todos os campos")
-            return redirect('/')
+        
         if not usuario or not senha:
             flash("Preencha todos os campos")
             return redirect('/login')
+        
         if usuario == usuario_admin and senha == senha_admin:
             session['admin'] = True
             return redirect('/dashboard')
-        resultado, usuario_encontrado = verificar_usuario(usuario, senha)
-        if resultado:
+        
+        # CORREÇÃO: Verificar se a função retornou algo válido
+        resultado = verificar_usuario(usuario, senha)
+        
+        if resultado is None:
+            flash("Usuario não encontrado. Tente novamente!")
+            return render_template('/login.html')
+        
+        # Agora faz o unpacking
+        sucesso, usuario_encontrado = resultado
+        
+        if sucesso:
             if usuario_encontrado['ativo'] == 0:
-                flash("Usuario bloqueado, fale com o ADM")
+                flash("Usuário bloqueado, fale com o ADM")
                 return redirect('/login')
 
             if usuario_encontrado['senha'] == '1234':
@@ -160,6 +172,7 @@ def login():
 
             session['idUsuario'] = usuario_encontrado['idUsuario']
             session['user'] = usuario_encontrado['user']
+            session['foto'] = usuario_encontrado['foto']
             return redirect('/')
         else:
             flash("Credenciais inválidas!")
@@ -183,6 +196,7 @@ def dashboard():
 
 @app.route('/register', methods=['GET','POST'])
 def register():
+    
     if request.method == 'GET':
         return render_template('cadastro.html')
     elif request.method == 'POST':
@@ -195,7 +209,9 @@ def register():
         
         senha_hash =  generate_password_hash(senha)
 
-        resultado, erro = adicionar_usuario(nome, usuario, senha_hash)
+        foto = "placeholder.jpg"
+
+        resultado, erro = adicionar_usuario(nome, usuario, senha_hash, foto)
 
         if resultado:
             flash("usuario cadastrado com sucesso!")
@@ -254,6 +270,93 @@ def reset(idUsuario):
     else: 
         flash("Falha ao resetar a senha!")
     return redirect('/dashboard')
-#executar codigo
+
+@app.route('/usuario/novasenha', methods =['POST','GET'])
+def novasenha():
+    if 'idUsuario' not in session:
+        return redirect('/')
+    if request.method == 'POST':
+        senha = request.form['senha']
+        confirmacao = request.form['confirmacao']
+
+        if not senha or not confirmacao:
+            flash('Preencha corretamente as senhas!')
+            return render_template ('nova_senha.html')
+        if senha != confirmacao:
+            flash('As senhas estão diferentes!')
+            return render_template('nova_senha.html')
+        if senha == '1234':
+            flash('A senha não pode ser a mesma!')
+            return render_template('nova_senha.html')
+        
+        senha_hash = generate_password_hash(senha)
+        idUsuario = session['idUsuario']
+        sucesso = alterar_senha(senha_hash, idUsuario)
+        if sucesso:
+            flash("senha alterada com sucesso!")
+            return redirect('/login')
+        else:
+            flash("Erro no cadastro da nova senha!")
+            return render_template('nova_senha.html')
+
+
+@app.route('/perfil', methods = ['GET', 'POST'])
+def perfil():
+    if 'user' not in session:
+        return redirect('/')
+    
+    if request.method == 'GET':
+        lista_usuarios = listar_usuarios()
+        usuario = None
+        for u in lista_usuarios:
+            if u['idUsuario'] == session['idUsuario']:
+                usuario = u
+                break
+        
+        # VERIFICAÇÃO CRÍTICA - se usuário não foi encontrado
+        if not usuario:
+            flash("Erro: usuário não encontrado no banco de dados!")
+            return redirect('/')
+        
+        return render_template('perfil.html', nome=usuario['nome'], user=usuario['user'], foto=usuario['foto'])
+
+    if request.method == 'POST':
+        nome = request.form['nome'].strip()
+        user = request.form['user'].strip()
+        foto = request.files['foto']
+        idUsuario = session['idUsuario']
+        nome_foto = ""
+
+        if not nome or not user:
+            flash("Os campos Nome e User não podem estar vazios!")
+            return redirect('/perfil')
+        
+        if foto:
+            if foto.filename == '':
+                flash("Arquivo inválido!")
+                return redirect('/perfil')
+            
+            extensao = foto.filename.rsplit('.',1)[-1].lower()
+            if extensao not in ('png','jpg','webp'):
+                flash("Extensão inválida!")
+                return redirect('/perfil')
+            
+            if len(foto.read()) > 2 * 1024 * 1024:
+                flash("Arquivo acima de 2MB não é aceito!")
+                return redirect('/perfil')
+            
+            foto.seek(0)
+            nome_foto = f"{idUsuario}.{extensao}"
+    
+        sucesso = editar_perfil(nome, user, nome_foto, idUsuario)
+        if sucesso:
+            if foto:
+                foto.save(f"static/uploads/{nome_foto}")
+            flash("Parabéns pela alteração, cada dia mais próximo de virar um piblle 100%😼","success")
+        else:
+            flash("Erro ao alterar seus dados, mas não desista ainda, você pode tentar denovo ou pedir ajuda para o piblle supremo (ADM)")
+
+        return redirect('/perfil')
+
 if __name__ == "__main__":
     app.run(debug=True)

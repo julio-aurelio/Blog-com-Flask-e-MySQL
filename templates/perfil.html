@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+
+<div class="perfil">
+    {% with mensagens = get_flashed_messages() %}
+                {% if mensagens %}
+                {% for msg in mensagens %}
+                <p style="
+                background-color:green; 
+                border-radius: 5px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 15px;
+                height: 30px;
+                width: 600px;
+                color: aliceblue;
+                font-size: 10px;
+                ">{{ msg }}</p>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+    <form action="/perfil" method="POST" enctype="multipart/form-data">
+
+        <img src="../static/uploads/{{ foto }}" class="foto-perfil">
+
+        <h2>Olá, {{ nome }}!</h2>
+        <hr>
+
+        <h3>Alterar dados</h3>
+
+        <label>Nome do usuário:</label>
+        <input type="text" name="nome" value="{{ nome }}" required>
+
+        <label>User:</label>
+        <input type="text" name="user" value="{{ user }}" required>
+        <br>
+        <label>Foto de perfil:</label>
+        <input class="img" type="file" name="foto" accept=".jpg, .png, .webp">
+        <br>
+        <button class="btn-enviar" type="submit">Salvar alterações</button>
+
+    </form>
+    
+
+</div>
+
+{% endblock %}
