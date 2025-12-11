@@ -12,22 +12,6 @@
                 <textarea name="conteudo" placeholder="Escreva aqui..."
                     required>{{ post.conteudo if post else '' }}</textarea>
                 <button type="submit">{{ 'Salvar' if post else 'Postar' }}</button>
-                {% with mensagens = get_flashed_messages() %}
-                {% if mensagens %}
-                {% for msg in mensagens %}
-                <p style="
-                background-color:green; 
-                border-radius: 5px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 15px;
-                height: 30px;
-                color: aliceblue;
-                ">{{ msg }}</p>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
             </form>
         </div>
         {% endif %}

@@ -2,24 +2,6 @@
 {% block conteudo %}
 
 <div class="perfil">
-    {% with mensagens = get_flashed_messages() %}
-                {% if mensagens %}
-                {% for msg in mensagens %}
-                <p style="
-                background-color:green; 
-                border-radius: 5px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-top: 15px;
-                height: 30px;
-                width: 600px;
-                color: aliceblue;
-                font-size: 10px;
-                ">{{ msg }}</p>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
     <form action="/perfil" method="POST" enctype="multipart/form-data">
 
         <img src="../static/uploads/{{ foto }}" class="foto-perfil">

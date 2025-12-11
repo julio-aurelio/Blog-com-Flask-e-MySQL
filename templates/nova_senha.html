@@ -6,13 +6,6 @@
 
     <form class="form-login" action="/usuario/novasenha" method="POST">
         <h2>Altere a senha</h2>
-        {% with mensagens = get_flashed_messages() %}
-        {% if mensagens %}
-        {% for msg in mensagens %}
-        {{ msg }}
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
         <label for="">senha: </label>
         <input type="password" name="senha" required>
         <label>Confirme a nova senha: </label>
