@@ -1,20 +1,19 @@
 from flask import Flask, render_template, request, redirect, flash, session
 import mysql.connector
 from db import *
-from dotenv import load_dotenv
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+from config import *
 
-#carregar esse arquivo para o Python
-load_dotenv()
 
 #Acessar as variaveis
-secret_key = os.getenv("SECRET_KEY")
-usuario_admin = os.getenv("USUARIO_ADMIN")
-senha_admin = os.getenv("SENHA_ADMIN")
+secret_key = SECRET_KEY
+usuario_admin = USUARIO_ADMIN
+senha_admin = SENHA_ADMIN
 
 #essa linha cria o um app web usando Flask
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static/uploads')
 app.secret_key = secret_key #chave secreta
 
 app.config['UPLOAD_FOLDER'] = "static/uploads"
@@ -32,7 +31,7 @@ def novopost():
     if request.method == 'GET':
         return redirect ('/')
     if 'idUsuario' not in session:
-        flash("Você precisa estar logado para postar!")
+        flash("Você precisa estar logado para postar!","error")
         return redirect('/login')
     if request.method == 'POST':
         titulo = request.form['titulo'].strip()
@@ -40,15 +39,15 @@ def novopost():
         idUsuario = session['idUsuario']
 
         if not titulo or not conteudo:
-            flash("Preencha todos os campos")
+            flash("Preencha todos os campos","warning")
             return redirect('/')
         
         post = adicionar_post(titulo, conteudo, idUsuario)
         if post:
-            flash ("Post realizado com sucesso")
+            flash ("Post realizado com sucesso","success")
             return redirect ('/')
         else:
-            flash  ("ERRO! Falha ao postar!")
+            flash  ("ERRO! Falha ao postar!","error")
             postagens = listar_post()
             return render_template('index.html', postagens=postagens)
 
@@ -56,7 +55,7 @@ def novopost():
 def deletarpost(idPost):
     if 'idUsuario' not in session and not session.get('admin'):
         print("Usuário não autorizado acessando rota excluir.")
-        flash("Você precisa estar logado para excluir posts!")
+        flash("Você precisa estar logado para excluir posts!","warning")
         return redirect('/')
 
     try:
@@ -67,12 +66,12 @@ def deletarpost(idPost):
                 autor_post = cursor.fetchone()
 
                 if not autor_post or autor_post['idUsuario'] != session.get('idUsuario'):
-                    print("Tentativa de exclusão inválida!")
-                    flash("Você não pode excluir posts de outros usuários!")
+                    print("Tentativa de exclusão inválida!","error")
+                    flash("Você não pode excluir posts de outros usuários!","warning")
                     return redirect('/')
             cursor.execute("DELETE FROM post WHERE idPost = %s", (idPost,))
             conexao.commit()
-            flash("Post excluído com sucesso!")
+            flash("Post excluído com sucesso!","success")
             print(f"Post {idPost} excluído com sucesso!")
 
             if 'admin' in session:
@@ -82,7 +81,7 @@ def deletarpost(idPost):
 
     except mysql.connector.Error as erro:
         print(f"ERRO DE BD! Erro: {erro}")
-        flash("Ops! Tente mais tarde!")
+        flash("Ops! Tente mais tarde!","warning")
         return redirect('/')
     
 @app.route('/editarpost/<int:idPost>', methods=['GET','POST'])
@@ -97,7 +96,7 @@ def editarpost(idPost):
         autor = cursor.fetchone()
 
         if not autor:
-            flash("Post não encontrado!")
+            flash("Post não encontrado!","error")
             return redirect('/')
 
         if autor['idUsuario'] != session['idUsuario']:
@@ -115,7 +114,7 @@ def editarpost(idPost):
 
         except mysql.connector.Error as erro:
             print(f"ERRO DE DB!ERRO:{erro}")
-            flash("Houve um erro! Tente mais tarde!")
+            flash("Houve um erro! Tente mais tarde!","error")
             return redirect ('/')
 
     if request.method == "POST":
@@ -123,15 +122,15 @@ def editarpost(idPost):
         conteudo = request.form['conteudo'].strip()
 
         if not titulo or not conteudo:
-            flash("Preencha todos os campos!")
+            flash("Preencha todos os campos!","warning")
             return redirect(f'/editarpost/{idPost}')
 
         sucesso = atualizar_post(titulo, conteudo, idPost)
             
         if sucesso:    
-            flash("Post alterado com sucesso")
+            flash("Post alterado com sucesso","success")
         else:
-            flash("Falha ao alterar o post! Tente mais tarde")
+            flash("Falha ao alterar o post! Tente mais tarde","error")
         return redirect('/')
 
 
@@ -144,7 +143,7 @@ def login():
         senha = request.form['senha'].strip()
         
         if not usuario or not senha:
-            flash("Preencha todos os campos")
+            flash("Preencha todos os campos","warning")
             return redirect('/login')
         
         if usuario == usuario_admin and senha == senha_admin:
@@ -155,7 +154,7 @@ def login():
         resultado = verificar_usuario(usuario, senha)
         
         if resultado is None:
-            flash("Usuario não encontrado. Tente novamente!")
+            flash("Usuario não encontrado. Tente novamente!","error")
             return render_template('/login.html')
         
         # Agora faz o unpacking
@@ -163,7 +162,7 @@ def login():
         
         if sucesso:
             if usuario_encontrado['ativo'] == 0:
-                flash("Usuário bloqueado, fale com o ADM")
+                flash("Usuário bloqueado, fale com o ADM","error")
                 return redirect('/login')
 
             if usuario_encontrado['senha'] == '1234':
@@ -175,7 +174,7 @@ def login():
             session['foto'] = usuario_encontrado['foto']
             return redirect('/')
         else:
-            flash("Credenciais inválidas!")
+            flash("Credenciais inválidas!","error")
             return render_template('/login.html')
         
 
@@ -204,7 +203,7 @@ def register():
         usuario = request.form['user'].lower().strip()
         senha = request.form['senha'].strip()
         if not nome or not usuario or not senha:
-            flash('Preencha todos os campos!Ligero você fio😠')
+            flash('Preencha todos os campos!Ligero você fio😠',"warning")
             return redirect('/register')
         
         senha_hash =  generate_password_hash(senha)
@@ -214,13 +213,13 @@ def register():
         resultado, erro = adicionar_usuario(nome, usuario, senha_hash, foto)
 
         if resultado:
-            flash("usuario cadastrado com sucesso!")
+            flash("usuario cadastrado com sucesso!","success")
             return redirect('/login')
         else:
             if erro.errno == 1062:
-                flash("Esse nome de usuario já foi cadastrado! tente outro!")
+                flash("Esse nome de usuario já foi cadastrado! tente outro!","error")
             else:
-                flash("Erro ao cadastro! procuro o suporte")
+                flash("Erro ao cadastro! procuro o suporte","error")
             return redirect('/register')
         
 @app.errorhandler(404)
@@ -239,9 +238,9 @@ def status_usuario(idUsuario):
     sucesso = alterar_status(idUsuario)
 
     if sucesso:
-        flash('Status alterado com sucesso!')
+        flash('Status alterado com sucesso!',"success")
     else:
-        flash("Erro na alteração so status!")
+        flash("Erro na alteração so status!","error")
 
     return redirect('/dashboard')
 
@@ -253,9 +252,9 @@ def excluir_usuario(idUsuario):
     sucesso = delete_usuario(idUsuario)
 
     if sucesso:
-        flash("Usuario excluido com sucesso")
+        flash("Usuario excluido com sucesso","success")
     else:
-        flash("Erro na exclusão do usuario")
+        flash("Erro na exclusão do usuario","error")
     
     return redirect('/dashboard')
 
@@ -266,37 +265,43 @@ def reset(idUsuario):
         return redirect('/')
     sucesso = reset_senha(idUsuario)
     if sucesso:
-        flash("Senha restada com sucesso!")
+        flash("Senha restada com sucesso!","success")
     else: 
-        flash("Falha ao resetar a senha!")
+        flash("Falha ao resetar a senha!","error")
     return redirect('/dashboard')
 
 @app.route('/usuario/novasenha', methods =['POST','GET'])
 def novasenha():
     if 'idUsuario' not in session:
         return redirect('/')
+    
+    if request.method == 'GET':
+        return render_template ('nova_senha.html')
+    
     if request.method == 'POST':
         senha = request.form['senha']
         confirmacao = request.form['confirmacao']
 
         if not senha or not confirmacao:
-            flash('Preencha corretamente as senhas!')
+            flash('Preencha corretamente as senhas!',"error")
             return render_template ('nova_senha.html')
         if senha != confirmacao:
-            flash('As senhas estão diferentes!')
+            flash('As senhas estão diferentes!',"error")
             return render_template('nova_senha.html')
         if senha == '1234':
-            flash('A senha não pode ser a mesma!')
+            flash('A senha não pode ser a mesma!',"warning")
             return render_template('nova_senha.html')
         
         senha_hash = generate_password_hash(senha)
         idUsuario = session['idUsuario']
         sucesso = alterar_senha(senha_hash, idUsuario)
         if sucesso:
-            flash("senha alterada com sucesso!")
+            flash("senha alterada com sucesso!","success")
+            if 'user' in session:
+                return redirect ('/perfil')
             return redirect('/login')
         else:
-            flash("Erro no cadastro da nova senha!")
+            flash("Erro no cadastro da nova senha!","error")
             return render_template('nova_senha.html')
 
 
@@ -315,7 +320,7 @@ def perfil():
         
         # VERIFICAÇÃO CRÍTICA - se usuário não foi encontrado
         if not usuario:
-            flash("Erro: usuário não encontrado no banco de dados!")
+            flash("Erro: usuário não encontrado no banco de dados!","error")
             return redirect('/')
         
         return render_template('perfil.html', nome=usuario['nome'], user=usuario['user'], foto=usuario['foto'])
@@ -328,21 +333,21 @@ def perfil():
         nome_foto = ""
 
         if not nome or not user:
-            flash("Os campos Nome e User não podem estar vazios!")
+            flash("Os campos Nome e User não podem estar vazios!","waring")
             return redirect('/perfil')
         
         if foto:
             if foto.filename == '':
-                flash("Arquivo inválido!")
+                flash("Arquivo inválido!","error")
                 return redirect('/perfil')
             
             extensao = foto.filename.rsplit('.',1)[-1].lower()
             if extensao not in ('png','jpg','webp'):
-                flash("Extensão inválida!")
+                flash("Extensão inválida!","error")
                 return redirect('/perfil')
             
             if len(foto.read()) > 2 * 1024 * 1024:
-                flash("Arquivo acima de 2MB não é aceito!")
+                flash("Arquivo acima de 2MB não é aceito!","error")
                 return redirect('/perfil')
             
             foto.seek(0)
@@ -351,10 +356,11 @@ def perfil():
         sucesso = editar_perfil(nome, user, nome_foto, idUsuario)
         if sucesso:
             if foto:
-                foto.save(f"static/uploads/{nome_foto}")
+                caminho_completo = os.path.join(app.config['UPLOAD_FOLDER'], nome_foto)
+                foto.save(caminho_completo)
             flash("Parabéns pela alteração, cada dia mais próximo de virar um piblle 100%😼","success")
         else:
-            flash("Erro ao alterar seus dados, mas não desista ainda, você pode tentar denovo ou pedir ajuda para o piblle supremo (ADM)")
+            flash("Erro ao alterar seus dados, mas não desista ainda, você pode tentar denovo ou pedir ajuda para o piblle supremo (ADM)","error")
 
         return redirect('/perfil')
 

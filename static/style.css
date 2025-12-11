@@ -755,13 +755,15 @@ textarea:focus-visible {
   flex-direction: column;
 }
 .perfil form{
+  margin-top: 5px;
+  margin-bottom:15px ;
   background-color: var(--neutral-light);
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   width: 30%;
-  height: 94%;
+  height: 100%;
   border-radius: 25px;
   gap: 5px;
   box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
@@ -774,6 +776,9 @@ textarea:focus-visible {
 }
 .perfil form input{
   border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
   width: 50%;
   height: 4%;
   border: 1px solid var(--neutral-dark);
@@ -791,3 +796,105 @@ textarea:focus-visible {
   justify-content: center;
   align-items: center;
 }
+/* MENU ESCURO */
+.cropper-modal {
+    position: fixed;
+    background: rgb(0, 0, 0);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* JANELA */
+.cropper-box {
+    background: #141414;
+    width: 480px;
+    padding: 20px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-shadow: 0 0 20px #000;
+}
+
+/* TOPO */
+.cropper-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 18px;
+    color: white;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 26px;
+    color: white;
+    cursor: pointer;
+}
+
+/* ÁREA DE EDIÇÃO */
+.cropper-preview-wrapper {
+    width: 100%;
+    height: 300px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+/* MÁSCARA CIRCULAR */
+.cropper-circle-mask {
+    position: absolute;
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    border: 3px solid white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* SLIDER */
+.zoom-control input {
+    width: 100%;
+}
+
+/* BOTÕES */
+.cropper-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancel {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-apply {
+    background: #5A3F92;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#cropImage {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.cropper-modal,
+.cropper-box {
+    opacity: 1 !important;
+}
+

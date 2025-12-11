@@ -3,28 +3,169 @@
 
 <div class="perfil">
     <form action="/perfil" method="POST" enctype="multipart/form-data">
-
-        <img src="../static/uploads/{{ foto }}" class="foto-perfil">
+        <img src="../static/uploads/{{ foto }}" class="foto-perfil" id="previewFoto">
 
         <h2>Olá, {{ nome }}!</h2>
-        <hr>
-
         <h3>Alterar dados</h3>
-
+        <hr>
         <label>Nome do usuário:</label>
         <input type="text" name="nome" value="{{ nome }}" required>
-
+        <hr>
         <label>User:</label>
         <input type="text" name="user" value="{{ user }}" required>
         <br>
         <label>Foto de perfil:</label>
-        <input class="img" type="file" name="foto" accept=".jpg, .png, .webp">
+        <input id="inputFoto" class="img" type="file" name="foto" accept=".jpg, .png, .webp">
         <br>
+        <a href="/usuario/novasenha">Alterar senha</a>
+        <hr>
         <button class="btn-enviar" type="submit">Salvar alterações</button>
-
     </form>
-    
+</div>    
 
+<div id="modalCrop" class="cropper-modal">
+    <div class="cropper-box">
+        <div class="cropper-header">
+            <span>Editar imagem</span>
+            <button id="closeCrop" class="close-btn">×</button>
+        </div>
+
+        <div class="cropper-preview-wrapper">
+            <div class="cropper-circle-mask"></div>
+            <img id="cropImage">
+        </div>
+
+        <div class="zoom-control">
+            <input type="range" id="zoomSlider" min="0.1" max="3" step="0.01" value="1">
+        </div>
+
+        <div class="cropper-footer">
+            <button id="cancelCrop" class="btn-cancel">Cancelar</button>
+            <button id="applyCrop" class="btn-apply">Aplicar</button>
+        </div>
+    </div>
 </div>
+
+<script>
+let cropper = null;
+let imageBlob = null;
+const inputFoto = document.getElementById("inputFoto");
+const modal = document.getElementById("modalCrop");
+const cropImage = document.getElementById("cropImage");
+const previewFoto = document.getElementById("previewFoto");
+const zoomSlider = document.getElementById("zoomSlider");
+
+inputFoto.addEventListener("change", function () {
+    const arquivo = this.files[0];
+    if (!arquivo) return;
+
+    const url = URL.createObjectURL(arquivo);
+    cropImage.src = url;
+
+    modal.style.display = "flex";
+
+    cropImage.onload = () => {
+        if (cropper) cropper.destroy();
+
+        cropper = new Cropper(cropImage, {
+            aspectRatio: 1,
+            dragMode: "move",
+            viewMode: 1,
+            background: false,
+            responsive: true,
+            autoCropArea: 1,
+            autoCrop: true,
+            scalable: true,
+            zoomable: true,
+            movable: true,
+            cropBoxMovable: false,
+            cropBoxResizable: false,
+            guides: false,
+            center: false,
+            highlight: false,
+        });
+
+        zoomSlider.value = 1;
+    };
+});
+
+// Fechar modal
+document.getElementById("cancelCrop").onclick = 
+document.getElementById("closeCrop").onclick = () => {
+    modal.style.display = "none";
+    if (cropper) cropper.destroy();
+};
+
+// Zoom
+zoomSlider.addEventListener("input", () => {
+    if (cropper) cropper.zoomTo(Number(zoomSlider.value));
+});
+
+// Aplicar recorte
+document.getElementById("applyCrop").onclick = async () => {
+    if (!cropper) return;
+
+    // Obter canvas recortado
+    const squareCanvas = cropper.getCroppedCanvas({
+        width: 512,
+        height: 512,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+    });
+
+    // Criar canvas para círculo
+    const circleCanvas = document.createElement("canvas");
+    circleCanvas.width = 512;
+    circleCanvas.height = 512;
+    const ctx = circleCanvas.getContext("2d");
+
+    // Criar máscara circular
+    ctx.beginPath();
+    ctx.arc(256, 256, 256, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+
+    // Desenhar imagem recortada
+    ctx.drawImage(squareCanvas, 0, 0, 512, 512);
+
+    // Converter para blob
+    circleCanvas.toBlob(async (blob) => {
+        // Criar arquivo a partir do blob
+        const file = new File([blob], "foto_perfil.png", { 
+            type: "image/png",
+            lastModified: Date.now()
+        });
+
+        // Criar DataTransfer e adicionar o arquivo
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+
+        // Atribuir o arquivo ao input
+        inputFoto.files = dataTransfer.files;
+
+        // Atualizar preview
+        const imageUrl = URL.createObjectURL(blob);
+        previewFoto.src = imageUrl;
+
+        // Armazenar blob para uso posterior (se necessário)
+        imageBlob = blob;
+
+        // Fechar modal e limpar cropper
+        modal.style.display = "none";
+        cropper.destroy();
+        cropper = null;
+
+        // Liberar URL antiga da imagem do cropper
+        if (cropImage.src) {
+            URL.revokeObjectURL(cropImage.src);
+        }
+
+        console.log("Foto recortada aplicada com sucesso!");
+        console.log("Arquivo:", inputFoto.files[0]);
+
+    }, 'image/png', 0.95); // Qualidade 95%
+};
+</script>
 
 {% endblock %}

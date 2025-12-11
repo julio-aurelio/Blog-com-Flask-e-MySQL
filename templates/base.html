@@ -5,55 +5,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blog</title>
-    <link rel="stylesheet" href="../static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../java.js">
-
+    <link rel="icon" href="{{ url_for('static', filename='img/pibble logo.png') }}">
 </head>
 
 <body>
-    <header>
+
+<header>
     <div class="header-content">
+
         <div class="pibble">
-            <img src="../static/img/piblle2.png" alt="">
+            <img src="{{ url_for('static', filename='img/piblle2.png') }}" alt="">
         </div>
+
         <div class="titulo">
             <h1>Wash my BLOG!</h1>
         </div>
+
         <div class="header-right">
+
             {% if 'user' in session or 'admin' in session %}
                 <div class="auth-buttons">
+
                     {% if 'admin' in session %}
-                    <a class="voltar" href="/" class="auth-btn login-btn">Inicio</a>
-                    <a href="/dashboard" class="auth-btn login-btn"><button>Área ADM</button></a>
+                        <a class="voltar" href="/">Inicio</a>
+                        <a href="/dashboard"><button>Área ADM</button></a>
                     {% endif %}
-                    <a href="/logout" class="auth-btn registrar-btn">Sair</a>
+
+                    <a href="/logout">Sair</a>
+
                     {% if 'user' in session %}
-                    <a class="voltar" href="/" class="auth-btn login-btn">Inicio</a>
-                    <a href="/perfil" class="auth-btn registrar-btn"><button>Perfil</button></a>
+                        <a class="voltar" href="/">Inicio</a>
+                        <a href="/perfil"><button>Perfil</button></a>
                     {% endif %}
                 </div>
+
             {% else %}
                 <div class="auth-buttons">
-                    <a href="/" class="auth-btn login-btn">Inicio</a>
-                    <a href="/login" class="auth-btn login-btn">Entrar</a>
-                    <a href="/register" class="auth-btn registrar-btn">Cadastrar</a>
-                    
+                    <a href="/">Inicio</a>
+                    <a href="/login">Entrar</a>
+                    <a href="/register">Cadastrar</a>
                 </div>
             {% endif %}
+
         </div>
+
         <div class="pibble">
-            <img src="../static/img/piblle.png" alt="">
+            <img src="{{ url_for('static', filename='img/piblle.png') }}" alt="">
         </div>
+
     </div>
 </header>
 
-    <main>
-        {% block conteudo %}{% endblock %} <!--comando jo JINJA-->
-    </main>
-
-</body>
+<main>
+    {% block conteudo %}{% endblock %}
+</main>
 
 {% with messages = get_flashed_messages(with_categories=True) %}
   {% if messages %}
@@ -65,4 +74,8 @@
   {% endif %}
 {% endwith %}
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="{{ url_for('static', filename='java.js') }}"></script>
+
+</body>
 </html>

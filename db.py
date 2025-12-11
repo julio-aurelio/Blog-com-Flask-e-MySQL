@@ -1,16 +1,16 @@
 import mysql.connector
 from werkzeug.security import check_password_hash
+from config import *
 
 def conectar():
     conexao = mysql.connector.connect(
-        host= "localhost",
-        user="root",
-        password = "senai",
-        database="blog_julio"
+        host=HOST,   # variável do config.py
+        user=USER,   # variável do config.py
+        password=PASSWORD,   # variável do config.py
+        database=DATABASE   # variável do config.py
     )
-
     if conexao.is_connected():
-        print("conexão com BD OK!")
+        print("Conexão com BD OK!")
     
     return conexao
 
